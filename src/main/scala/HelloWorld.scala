@@ -1,16 +1,28 @@
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
 
 object HelloWorld {
 
+  def query(file:String, dbName:String,query:String): Unit = {
+    //create spark session
+    val ss = SparkSession.builder().master("local")
+      .appName("Spark Sesh").getOrCreate()
+    SparkSession.builder()
+    //read from provided file name to create DataFrame
+    val data = ss.read.option("header","true").csv(file)
+    //create SQL database out of DataFrame
+    data.createOrReplaceTempView(dbName)
+    //perform provided SQL query
+    val sqlDF = ss.sql(query)
+    sqlDF.show()
+
+  }
+
   def main(args: Array[String]): Unit ={
     System.setProperty("hadoop.home.dir", "C:\\hadoop")
-    val sparkConf = new SparkConf().setAppName("SOME APP NAME").setMaster("local[2]");
 
-    val sc = new SparkContext(sparkConf)
-    sc.setLogLevel("ERROR")
-    val data = sc.textFile("testFile.txt")
-    val words = data.flatMap(line => line.split("\n"))
-    val lineWithBee = words.filter(_.contains("bee"))
-    lineWithBee.foreach(println(_))
+    query("C:\\Users\\Zoe Sanders\\Desktop\\Notes\\Learning\\covid_19_data.csv",
+    "covid-19", "Select")
+
   }
 }
